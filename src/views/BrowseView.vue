@@ -9,11 +9,15 @@
             <el-icon><Reading /></el-icon>
             題庫瀏覽
           </h1>
-          <p class="browse-sub">{{ currentVolume }} ‧ 共 {{ filteredQuestions.length }} / {{ volumeQuestions.length }} 題</p>
+          <p class="browse-sub">
+            <span class="vol-label-main">{{ currentVolume }}</span>
+            <span v-if="store.volumeSubjectMap[currentVolume]" class="vol-label-sub"> - {{ store.volumeSubjectMap[currentVolume] }}</span>
+            ‧ 共 {{ filteredQuestions.length }} / {{ volumeQuestions.length }} 題
+          </p>
         </div>
       </div>
       <div class="header-right">
-        <el-tag :type="showAnswersGlobal ? 'success' : 'info'" effect="dark" size="large" class="answer-toggle-tag" @click="showAnswersGlobal = !showAnswersGlobal" style="cursor:pointer">
+        <el-tag :type="showAnswersGlobal ? 'success' : 'info'" effect="dark" size="large" class="answer-toggle-tag" @click="toggleGlobal" style="cursor:pointer">
           <el-icon style="margin-right:4px"><component :is="showAnswersGlobal ? Hide : View" /></el-icon>
           {{ showAnswersGlobal ? '隱藏答案' : '顯示答案' }}
         </el-tag>
@@ -30,7 +34,10 @@
             class="vol-tab"
             :class="{ active: vol === currentVolume }"
             @click="switchVolume(vol)"
-          >{{ vol }}</div>
+          >
+            <span class="tab-vol">{{ vol }}</span>
+            <span v-if="store.volumeSubjectMap[vol]" class="tab-sub">{{ store.volumeSubjectMap[vol] }}</span>
+          </div>
         </div>
       </el-scrollbar>
     </div>
@@ -73,7 +80,7 @@
         v-for="(q, idx) in pagedQuestions"
         :key="q.id"
         class="question-card"
-        :class="{ revealed: revealedIds.has(q.id) }"
+        :class="{ revealed: isAnswerVisible(q) }"
       >
         <div class="q-number">{{ globalIndex(idx) }}</div>
         <div class="q-body">
@@ -158,7 +165,10 @@ function switchVolume(vol) {
   currentVolume.value = vol
   router.replace({ name: 'browse', params: { volume: vol } })
   currentPage.value = 1
+  // 清空搜尋（同時清 debounced 值與 timer，避免舊關鍵字仍在篩選）
+  clearTimeout(searchTimer)
   searchKeyword.value = ''
+  debouncedKeyword.value = ''
   revealedIds.value.clear()
 }
 
@@ -207,26 +217,52 @@ function globalIndex(localIdx) {
 }
 
 function onPageChange() {
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  window.scrollTo({ top: 0, behavior: 'instant' })
 }
 
 // ── Answer Reveal ─────────────────────────────────────
+// showAnswersGlobal: 全域開關
+// revealedIds: global=OFF 時，個別「已顯示」的題目
+// hiddenIds:   global=ON  時，個別「已隱藏」的題目
+// 兩組 Set 互不干擾，切換 global 時雙方清空
 const showAnswersGlobal = ref(false)
 const revealedIds = ref(new Set())
+const hiddenIds = ref(new Set())
 
 function isAnswerVisible(q) {
-  return showAnswersGlobal.value || revealedIds.value.has(q.id)
+  return showAnswersGlobal.value
+    ? !hiddenIds.value.has(q.id)
+    : revealedIds.value.has(q.id)
+}
+
+function toggleGlobal() {
+  showAnswersGlobal.value = !showAnswersGlobal.value
+  // 切換時清空雙方，避免殘留狀態互相干擾
+  revealedIds.value = new Set()
+  hiddenIds.value = new Set()
 }
 
 function toggleReveal(id) {
-  const s = new Set(revealedIds.value)
-  if (s.has(id)) s.delete(id)
-  else s.add(id)
-  revealedIds.value = s
+  if (showAnswersGlobal.value) {
+    // Global ON：操作 hiddenIds（個別隱藏 / 取消隱藏）
+    const s = new Set(hiddenIds.value)
+    if (s.has(id)) s.delete(id)
+    else s.add(id)
+    hiddenIds.value = s
+  } else {
+    // Global OFF：操作 revealedIds（個別顯示 / 取消顯示）
+    const s = new Set(revealedIds.value)
+    if (s.has(id)) s.delete(id)
+    else s.add(id)
+    revealedIds.value = s
+  }
 }
 
-// Reset revealed when switching volume
-watch(currentVolume, () => { revealedIds.value = new Set() })
+// 切換冊時清空所有狀態
+watch(currentVolume, () => {
+  revealedIds.value = new Set()
+  hiddenIds.value = new Set()
+})
 
 // ── Helpers ───────────────────────────────────────────
 function normalizedAnswer(answer) {
@@ -267,14 +303,18 @@ function highlight(text) {
 .vol-tab {
   flex-shrink: 0;
   padding: 6px 14px; border-radius: 8px;
-  font-size: 0.82rem; font-weight: 600;
   cursor: pointer; color: var(--color-text-muted);
   border: 1px solid transparent;
   transition: all 0.18s;
   white-space: nowrap;
+  display: flex; flex-direction: column; gap: 1px; align-items: flex-start;
 }
+.tab-vol { font-size: 0.82rem; font-weight: 700; line-height: 1.3; }
+.tab-sub { font-size: 0.68rem; font-weight: 400; opacity: 0.75; line-height: 1.2; max-width: 120px; white-space: normal; }
 .vol-tab:hover { background: rgba(79,142,247,0.08); color: var(--color-primary-light); }
 .vol-tab.active { background: rgba(79,142,247,0.15); border-color: rgba(79,142,247,0.35); color: var(--color-primary-light); }
+.vol-label-main { font-weight: 700; }
+.vol-label-sub { color: var(--color-text-muted); }
 
 /* ── Toolbar ── */
 .toolbar {

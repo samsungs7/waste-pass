@@ -85,12 +85,14 @@
               </div>
               <h3 class="ec-title">{{ group.name }}</h3>
               <div class="ec-volumes">
-                <el-tag
+                <div
                   v-for="vol in group.volumes"
                   :key="vol"
-                  size="small" type="info" effect="plain"
                   class="vol-chip"
-                >{{ vol }}</el-tag>
+                >
+                  <span class="vol-chip-name">{{ vol }}</span>
+                  <span v-if="store.volumeSubjectMap[vol]" class="vol-chip-sub">{{ store.volumeSubjectMap[vol] }}</span>
+                </div>
               </div>
               <div class="ec-footer">
                 <span class="ec-count">{{ groupQuestionCount(group) }} 題</span>
@@ -126,6 +128,7 @@
             </div>
             <div class="bc-body">
               <h3 class="bc-title">{{ vol }}</h3>
+              <p v-if="store.volumeSubjectMap[vol]" class="bc-subject">{{ store.volumeSubjectMap[vol] }}</p>
               <p class="bc-count">{{ volumeCount[vol] || 0 }} 題</p>
             </div>
             <el-icon class="bc-arrow"><ArrowRight /></el-icon>
@@ -323,8 +326,15 @@ const examIcons = [
   font-size: 0.75rem; color: var(--color-text-muted); font-weight: 500;
 }
 .ec-title { font-size: 0.88rem; font-weight: 700; color: var(--color-text); margin-bottom: 10px; line-height: 1.4; }
-.ec-volumes { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px; }
-.vol-chip { font-size: 0.7rem !important; }
+.ec-volumes { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 12px; }
+.vol-chip {
+  display: inline-flex; flex-direction: column; gap: 1px;
+  padding: 3px 8px; border-radius: 6px;
+  border: 1px solid var(--color-border);
+  background: rgba(79,142,247,0.06);
+}
+.vol-chip-name { font-size: 0.72rem; font-weight: 700; color: var(--color-primary-light); line-height: 1.3; }
+.vol-chip-sub { font-size: 0.62rem; color: var(--color-text-muted); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 110px; }
 .ec-footer { display: flex; align-items: center; gap: 8px; }
 .ec-count { font-size: 0.78rem; color: var(--color-text-muted); font-weight: 600; }
 .ec-arrow { color: var(--color-text-muted); opacity: 0.35; flex-shrink: 0; margin-right: 14px; transition: all 0.2s; }
@@ -346,7 +356,8 @@ const examIcons = [
   color: var(--color-primary-light);
 }
 .bc-body { flex: 1; min-width: 0; }
-.bc-title { font-size: 0.92rem; font-weight: 700; color: var(--color-text); margin-bottom: 2px; }
+.bc-title { font-size: 0.92rem; font-weight: 700; color: var(--color-text); margin-bottom: 1px; }
+.bc-subject { font-size: 0.72rem; color: var(--color-text-muted); margin: 0 0 2px; line-height: 1.3; }
 .bc-count { font-size: 0.78rem; color: var(--color-text-muted); margin: 0; }
 .bc-arrow { color: var(--color-text-muted); opacity: 0.3; transition: all 0.2s; }
 .browse-card:hover .bc-arrow { opacity: 1; transform: translateX(3px); color: var(--color-primary-light); }

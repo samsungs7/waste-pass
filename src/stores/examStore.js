@@ -59,6 +59,22 @@ export const useExamStore = defineStore('exam', {
       return VOLUME_ORDER.filter(v => seen.has(v))
     },
 
+    // 冊別 → 科目名稱對照（從題目 subject 欄位自動推導）
+    // e.g. { '第五冊': '廢棄物清理許可及申報實務', ... }
+    volumeSubjectMap: () => {
+      const map = {}
+      allQuestions.forEach(q => {
+        if (q.volume && q.subject && !map[q.volume]) map[q.volume] = q.subject
+      })
+      return map
+    },
+
+    // 回傳 "第五冊 - 廢棄物清理許可及申報實務" 格式的標籤
+    volumeLabel: (s) => (volume) => {
+      const subject = s.volumeSubjectMap[volume]
+      return subject ? `${volume} - ${subject}` : volume
+    },
+
     // ── 科目相容 getters（供舊元件過渡用） ───────────────────────────
     subjects: () => {
       const map = {}
