@@ -1,0 +1,142 @@
+/* =============================================
+   CSS 變數 — 深色主題（預設）
+   ============================================= */
+:root,
+[data-theme="dark"] {
+  --color-bg: #0f1117;
+  --color-surface: #1a1d27;
+  --color-surface-2: #22263a;
+  --color-border: rgba(255, 255, 255, 0.08);
+  --color-primary: #4f8ef7;
+  --color-primary-light: #6ba3ff;
+  --color-primary-dark: #3a7ae8;
+  --color-success: #67c23a;
+  --color-danger: #f56c6c;
+  --color-warning: #e6a23c;
+  --color-text: #e8eaf0;
+  --color-text-muted: #8b92a8;
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.35);
+  --nav-bg: rgba(15, 17, 23, 0.85);
+  --exam-header-bg: rgba(15, 17, 23, 0.9);
+  --submit-bar-bg: rgba(15, 17, 23, 0.95);
+  --opt-hover-bg: rgba(79, 142, 247, 0.06);
+  --opt-hover-border: rgba(79, 142, 247, 0.25);
+  --wrong-card-border: rgba(245, 108, 108, 0.2);
+  --expl-bg: rgba(79, 142, 247, 0.07);
+  --expl-border: rgba(79, 142, 247, 0.2);
+}
+
+/* =============================================
+   CSS 變數 — 淺色主題
+   ============================================= */
+[data-theme="light"] {
+  --color-bg: #f0f4f8;
+  --color-surface: #ffffff;
+  --color-surface-2: #f5f7fa;
+  --color-border: rgba(0, 0, 0, 0.09);
+  --color-primary: #2563eb;
+  --color-primary-light: #3b82f6;
+  --color-primary-dark: #1d4ed8;
+  --color-success: #16a34a;
+  --color-danger: #dc2626;
+  --color-warning: #d97706;
+  --color-text: #111827;
+  --color-text-muted: #6b7280;
+  --shadow-card: 0 2px 12px rgba(0, 0, 0, 0.08);
+  --nav-bg: rgba(255, 255, 255, 0.9);
+  --exam-header-bg: rgba(240, 244, 248, 0.95);
+  --submit-bar-bg: rgba(255, 255, 255, 0.97);
+  --opt-hover-bg: rgba(37, 99, 235, 0.05);
+  --opt-hover-border: rgba(37, 99, 235, 0.25);
+  --wrong-card-border: rgba(220, 38, 38, 0.18);
+  --expl-bg: rgba(37, 99, 235, 0.05);
+  --expl-border: rgba(37, 99, 235, 0.18);
+}
+
+/* =============================================
+   Reset & Base
+   ============================================= */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Noto Sans TC', 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  min-height: 100vh;
+  line-height: 1.6;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+#app { min-height: 100vh; display: flex; flex-direction: column; }
+
+
+/* =============================================
+   Element Plus — 深色主題 overrides
+   ============================================= */
+.el-card {
+  background: var(--color-surface) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 16px !important;
+  box-shadow: var(--shadow-card) !important;
+  color: var(--color-text) !important;
+  transition: background 0.3s, border-color 0.3s !important;
+}
+.el-card__header {
+  border-bottom: 1px solid var(--color-border) !important;
+  color: var(--color-text) !important;
+}
+.el-button--primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)) !important;
+  border: none !important;
+  font-weight: 600 !important;
+}
+.el-button--primary:hover {
+  background: linear-gradient(135deg, var(--color-primary-light), var(--color-primary)) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(79, 142, 247, 0.35) !important;
+}
+.el-radio { color: var(--color-text) !important; }
+.el-radio__label { color: var(--color-text) !important; }
+.el-radio.is-checked .el-radio__label { color: var(--color-primary-light) !important; }
+.el-progress-bar__inner {
+  background: linear-gradient(90deg, var(--color-primary), #a78bfa) !important;
+}
+.el-divider { border-color: var(--color-border) !important; }
+.el-input__wrapper {
+  background: var(--color-surface) !important;
+  border-color: var(--color-border) !important;
+}
+.el-input__inner { color: var(--color-text) !important; }
+.el-slider__runway { background: var(--color-border) !important; }
+.el-form-item__label { color: var(--color-text) !important; }
+.el-switch__label { color: var(--color-text-muted) !important; }
+.el-switch__label.is-active { color: var(--color-primary-light) !important; }
+.el-input-number { background: var(--color-surface) !important; }
+
+/* Alert overrides */
+.el-alert--success.is-light {
+  background: rgba(103,194,58,0.1) !important;
+  border-color: rgba(103,194,58,0.3) !important;
+}
+.el-alert--error.is-light {
+  background: rgba(245,108,108,0.1) !important;
+  border-color: rgba(245,108,108,0.3) !important;
+}
+.el-alert--warning.is-light {
+  background: rgba(230,162,60,0.1) !important;
+  border-color: rgba(230,162,60,0.3) !important;
+}
+.el-alert__title { color: var(--color-text) !important; }
+.el-alert__description { color: var(--color-text-muted) !important; }
+
+/* =============================================
+   Utility
+   ============================================= */
+.page-container { max-width: 1200px; margin: 0 auto; padding: 32px 20px; }
+.page-title { font-size: 2rem; font-weight: 800; color: var(--color-text); margin-bottom: 8px; letter-spacing: -0.5px; }
+.page-subtitle { font-size: 1rem; color: var(--color-text-muted); margin-bottom: 32px; }
+.gradient-text {
+  background: linear-gradient(135deg, var(--color-primary-light), #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
