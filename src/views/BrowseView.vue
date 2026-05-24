@@ -1,69 +1,67 @@
 <template>
-  <div class="page-container">
+  <div class="page-container study-browse-page">
     <!-- Header -->
     <div class="browse-header">
-      <div class="header-left">
-        <el-button :icon="ArrowLeft" @click="$router.push('/')" circle />
-        <div>
-          <h1 class="browse-title">
-            <el-icon><Reading /></el-icon>
-            題庫瀏覽
-          </h1>
-          <p class="browse-sub">
-            <span class="vol-label-main">{{ currentVolume }}</span>
-            <span v-if="store.volumeSubjectMap[currentVolume]" class="vol-label-sub"> - {{ store.volumeSubjectMap[currentVolume] }}</span>
-            ‧ 共 {{ filteredQuestions.length }} / {{ volumeQuestions.length }} 題
-          </p>
-        </div>
-      </div>
-      <div class="header-right">
-        <el-tag :type="showAnswersGlobal ? 'success' : 'info'" effect="dark" size="large" class="answer-toggle-tag" @click="toggleGlobal" style="cursor:pointer">
-          <el-icon style="margin-right:4px"><component :is="showAnswersGlobal ? Hide : View" /></el-icon>
-          {{ showAnswersGlobal ? '隱藏答案' : '顯示答案' }}
-        </el-tag>
+      <el-button :icon="ArrowLeft" @click="$router.push('/')" circle class="back-btn" />
+      <div class="header-content">
+        <h1 class="browse-title">
+          <el-icon><Reading /></el-icon>
+          題庫瀏覽
+        </h1>
+        <p class="browse-sub">
+          <span class="vol-label-main">{{ currentVolume }}</span>
+          <span v-if="store.volumeSubjectMap[currentVolume]" class="vol-label-sub"> - {{ store.volumeSubjectMap[currentVolume] }}</span>
+          ‧ 共 {{ filteredQuestions.length }} / {{ volumeQuestions.length }} 題
+        </p>
       </div>
     </div>
 
-    <!-- Volume Selector -->
-    <div class="volume-selector-bar">
-      <el-scrollbar>
-        <div class="volume-tabs">
-          <div
-            v-for="vol in availableVolumes"
-            :key="vol"
-            class="vol-tab"
-            :class="{ active: vol === currentVolume }"
-            @click="switchVolume(vol)"
-          >
-            <span class="tab-vol">{{ vol }}</span>
-            <span v-if="store.volumeSubjectMap[vol]" class="tab-sub">{{ store.volumeSubjectMap[vol] }}</span>
+    <!-- Sticky Toolbar Wrapper (Sticks to top) -->
+    <div class="sticky-toolbar-wrapper">
+      <!-- Volume Selector (Tabs on top of keywords) -->
+      <div class="volume-selector-bar">
+        <el-scrollbar>
+          <div class="volume-tabs">
+            <div
+              v-for="vol in availableVolumes"
+              :key="vol"
+              class="vol-tab"
+              :class="{ active: vol === currentVolume }"
+              @click="switchVolume(vol)"
+            >
+              <span class="tab-vol">{{ vol }}</span>
+              <span v-if="store.volumeSubjectMap[vol]" class="tab-sub">{{ store.volumeSubjectMap[vol] }}</span>
+            </div>
           </div>
-        </div>
-      </el-scrollbar>
-    </div>
+        </el-scrollbar>
+      </div>
 
-    <!-- Toolbar -->
-    <div class="toolbar">
-      <el-input
-        v-model="searchKeyword"
-        placeholder="🔍 搜尋關鍵字..."
-        clearable
-        class="search-input"
-        @input="onSearch"
-      >
-        <template #prefix><el-icon><Search /></el-icon></template>
-      </el-input>
+      <!-- Keyword Search and Answer toggles -->
+      <div class="toolbar">
+        <el-input
+          v-model="searchKeyword"
+          placeholder="🔍 搜尋此冊題目關鍵字..."
+          clearable
+          class="search-input"
+          @input="onSearch"
+        >
+          <template #prefix><el-icon><Search /></el-icon></template>
+        </el-input>
 
-      <div class="toolbar-right">
+        <!-- Toggle All Answers next to search input -->
+        <el-button
+          :type="showAnswersGlobal ? 'success' : 'default'"
+          class="answer-toggle-btn"
+          @click="toggleGlobal"
+        >
+          <el-icon style="margin-right: 4px"><component :is="showAnswersGlobal ? Hide : View" /></el-icon>
+          {{ showAnswersGlobal ? '隱藏答案' : '顯示答案' }}
+        </el-button>
+
         <span class="result-count">
           <template v-if="searchKeyword">篩選到 <strong>{{ filteredQuestions.length }}</strong> 題</template>
           <template v-else>共 <strong>{{ volumeQuestions.length }}</strong> 題</template>
         </span>
-        <el-select v-model="pageSize" style="width: 100px" @change="currentPage = 1">
-          <el-option label="每頁 20 題" :value="20" />
-          <el-option label="每頁 30 題" :value="30" />
-          <el-option label="每頁 50 題" :value="50" />
-        </el-select>
       </div>
     </div>
 
@@ -127,8 +125,8 @@
       </div>
     </div>
 
-    <!-- Pagination -->
-    <div v-if="filteredQuestions.length > pageSize" class="pagination-bar">
+    <!-- Pagination & Page Size selector in the same line -->
+    <div v-if="filteredQuestions.length > 0" class="pagination-bar">
       <el-pagination
         v-model:current-page="currentPage"
         :page-size="pageSize"
@@ -137,18 +135,38 @@
         @current-change="onPageChange"
         background
       />
+      <div class="page-size-selector">
+        <span class="page-size-label">每頁顯示</span>
+        <el-select v-model="pageSize" style="width: 100px" @change="currentPage = 1">
+          <el-option label="20 題" :value="20" />
+          <el-option label="30 題" :value="30" />
+          <el-option label="50 題" :value="50" />
+        </el-select>
+      </div>
     </div>
+
+    <!-- Floating Back-to-Top Button -->
+    <transition name="fade">
+      <el-button
+        v-if="showBackToTop"
+        type="primary"
+        circle
+        class="back-to-top-btn"
+        :icon="CaretTop"
+        @click="scrollToTop"
+      />
+    </transition>
   </div>
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useExamStore } from '../stores/examStore'
 import { normalizeAnswer } from '../utils/questionHelper'
 import {
   ArrowLeft, View, Hide, Search, CircleCheck, InfoFilled,
-  Reading, DocumentDelete,
+  Reading, DocumentDelete, CaretTop
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -157,7 +175,6 @@ const store = useExamStore()
 
 const optLabels = ['A', 'B', 'C', 'D', 'E']
 
-// ── Volume State ─────────────────────────────────────
 const currentVolume = ref(route.params.volume || store.availableVolumes[0])
 const availableVolumes = computed(() => store.availableVolumes)
 
@@ -275,135 +292,347 @@ function highlight(text) {
   const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   return text.replace(new RegExp(escaped, 'gi'), m => `<mark class="kw-highlight">${m}</mark>`)
 }
+
+// ── Back to Top Floating Button ───────────────────────
+const showBackToTop = ref(false)
+
+function handleScroll() {
+  showBackToTop.value = window.scrollY > 300
+}
+
+function scrollToTop() {
+  window.scrollTo({ top: 0, behavior: 'instant' })
+}
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 <style scoped>
+/* ── Page Layout ── */
+.study-browse-page {
+  padding-bottom: 40px;
+}
+
 /* ── Header ── */
 .browse-header {
-  display: flex; align-items: center; justify-content: space-between;
-  margin-bottom: 20px; gap: 16px; flex-wrap: wrap;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 20px;
+  padding: 8px 0;
 }
-.header-left { display: flex; align-items: center; gap: 14px; }
+.back-btn {
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.header-content {
+  flex: 1;
+  min-width: 0;
+}
 .browse-title {
-  display: flex; align-items: center; gap: 8px;
-  font-size: 1.8rem; font-weight: 800; margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0 0 6px 0;
+  color: var(--color-text);
 }
-.browse-sub { font-size: 0.85rem; color: var(--color-text-muted); margin: 0; }
-.answer-toggle-tag { font-size: 0.9rem; padding: 8px 16px !important; border-radius: 99px; }
+.browse-sub {
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.4;
+}
+.vol-label-main {
+  font-weight: 700;
+  color: var(--color-primary-light);
+}
+.vol-label-sub {
+  color: var(--color-text-muted);
+}
 
-/* ── Volume Selector ── */
-.volume-selector-bar {
+/* ── Sticky Toolbar Wrapper ── */
+.sticky-toolbar-wrapper {
+  position: sticky;
+  top: 60px; /* Sticks right below main 60px navbar */
+  z-index: 98;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 8px 16px;
-  margin-bottom: 16px;
+  border-radius: 16px;
+  padding: 16px 18px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  backdrop-filter: blur(20px);
+  transition: all 0.3s ease;
 }
-.volume-tabs { display: flex; gap: 8px; padding-bottom: 2px; }
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+.search-input {
+  flex: 1;
+  min-width: 240px;
+}
+.answer-toggle-btn {
+  font-weight: 600;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.result-count {
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  margin-left: auto;
+}
+.result-count strong {
+  color: var(--color-primary-light);
+  font-weight: 700;
+}
+
+/* ── Volume Selector inside Sticky Top Wrapper ── */
+.volume-selector-bar {
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed var(--color-border);
+  padding: 0 0 12px 0;
+  margin-bottom: 12px;
+  box-shadow: none;
+  border-radius: 0;
+  backdrop-filter: none;
+}
+.volume-tabs {
+  display: flex;
+  gap: 10px;
+  padding-bottom: 4px;
+}
 .vol-tab {
   flex-shrink: 0;
-  padding: 6px 14px; border-radius: 8px;
-  cursor: pointer; color: var(--color-text-muted);
-  border: 1px solid transparent;
-  transition: all 0.18s;
+  padding: 8px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-2);
+  transition: all 0.2s ease;
   white-space: nowrap;
-  display: flex; flex-direction: column; gap: 1px; align-items: flex-start;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: flex-start;
+  min-width: 110px;
 }
-.tab-vol { font-size: 0.82rem; font-weight: 700; line-height: 1.3; }
-.tab-sub { font-size: 0.68rem; font-weight: 400; opacity: 0.75; line-height: 1.2; max-width: 120px; white-space: normal; }
-.vol-tab:hover { background: rgba(79,142,247,0.08); color: var(--color-primary-light); }
-.vol-tab.active { background: rgba(79,142,247,0.15); border-color: rgba(79,142,247,0.35); color: var(--color-primary-light); }
-.vol-label-main { font-weight: 700; }
-.vol-label-sub { color: var(--color-text-muted); }
-
-/* ── Toolbar ── */
-.toolbar {
-  display: flex; align-items: center; gap: 12px;
-  margin-bottom: 20px; flex-wrap: wrap;
+.tab-vol {
+  font-size: 0.85rem;
+  font-weight: 700;
+  line-height: 1.3;
 }
-.search-input { flex: 1; min-width: 200px; }
-.toolbar-right { display: flex; align-items: center; gap: 12px; }
-.result-count { font-size: 0.85rem; color: var(--color-text-muted); white-space: nowrap; }
-.result-count strong { color: var(--color-primary-light); }
+.tab-sub {
+  font-size: 0.68rem;
+  font-weight: 400;
+  opacity: 0.75;
+  line-height: 1.2;
+  max-width: 160px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.vol-tab:hover {
+  background: rgba(79, 142, 247, 0.08);
+  border-color: var(--color-primary-light);
+  color: var(--color-primary-light);
+}
+.vol-tab.active {
+  background: rgba(79, 142, 247, 0.15);
+  border-color: var(--color-primary);
+  color: var(--color-primary-light);
+  box-shadow: 0 4px 12px rgba(79, 142, 247, 0.15);
+}
 
 /* ── Empty state ── */
 .empty-state {
-  text-align: center; padding: 80px 20px;
+  text-align: center;
+  padding: 80px 20px;
   color: var(--color-text-muted);
 }
-.empty-state .el-icon { opacity: 0.3; margin-bottom: 16px; display: block; }
+.empty-state .el-icon {
+  opacity: 0.3;
+  margin-bottom: 16px;
+  display: block;
+}
 
 /* ── Question List ── */
-.question-list { display: flex; flex-direction: column; gap: 14px; margin-bottom: 32px; }
+.question-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+}
 
 .question-card {
-  display: flex; gap: 14px;
+  display: flex;
+  gap: 16px;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: 14px; padding: 20px 22px;
-  transition: border-color 0.25s;
+  border-radius: 16px;
+  padding: 22px 24px;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
 }
 .question-card.revealed {
-  border-color: rgba(52, 211, 153, 0.3);
+  border-color: rgba(52, 211, 153, 0.35);
   background: rgba(52, 211, 153, 0.02);
+  box-shadow: 0 4px 18px rgba(52, 211, 153, 0.05);
 }
 
 .q-number {
-  font-size: 0.72rem; font-weight: 800;
+  font-size: 0.75rem;
+  font-weight: 800;
   color: var(--color-primary-light);
-  background: rgba(79,142,247,0.1);
-  border-radius: 8px; min-width: 30px; height: 30px;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0; margin-top: 3px;
+  background: rgba(79, 142, 247, 0.1);
+  border-radius: 10px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
 }
 
-.q-body { flex: 1; min-width: 0; }
+.q-body {
+  flex: 1;
+  min-width: 0;
+}
 .q-text {
-  font-size: 0.97rem; font-weight: 500; line-height: 1.75;
-  margin-bottom: 14px; color: var(--color-text);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.75;
+  margin: 0 0 16px 0;
+  color: var(--color-text);
 }
 
-.q-options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+.q-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
 .q-option {
-  display: flex; align-items: flex-start; gap: 10px;
-  padding: 10px 14px; border-radius: 10px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  border-radius: 12px;
   border: 1px solid var(--color-border);
-  background: var(--color-surface-2, var(--color-surface));
-  transition: background 0.2s, border-color 0.2s;
-  position: relative;
+  background: var(--color-surface-2);
+  transition: all 0.2s ease;
 }
 .q-option.is-correct {
   border-color: rgba(52, 211, 153, 0.5) !important;
   background: rgba(52, 211, 153, 0.08) !important;
 }
 .opt-label {
-  font-size: 0.8rem; font-weight: 700;
+  font-size: 0.8rem;
+  font-weight: 800;
   color: var(--color-primary-light);
-  background: rgba(79,142,247,0.12);
-  border-radius: 4px; padding: 1px 7px;
-  flex-shrink: 0; margin-top: 1px;
+  background: rgba(79, 142, 247, 0.12);
+  border-radius: 6px;
+  padding: 2px 8px;
+  flex-shrink: 0;
+  margin-top: 1px;
 }
 .q-option.is-correct .opt-label {
-  color: #34d399; background: rgba(52,211,153,0.15);
+  color: #34d399;
+  background: rgba(52, 211, 153, 0.15);
 }
-.opt-text { font-size: 0.9rem; line-height: 1.6; color: var(--color-text); flex: 1; }
-.correct-icon { color: #34d399; flex-shrink: 0; margin-top: 2px; }
+.opt-text {
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--color-text);
+  flex: 1;
+}
+.correct-icon {
+  color: #34d399;
+  flex-shrink: 0;
+  margin-top: 3px;
+  font-size: 16px;
+}
 
 .q-explanation {
-  display: flex; align-items: flex-start; gap: 8px;
-  background: rgba(251,146,60,0.08);
-  border: 1px solid rgba(251,146,60,0.25);
-  border-radius: 10px; padding: 10px 14px;
-  font-size: 0.85rem; color: var(--color-text-muted); line-height: 1.6;
-  margin-bottom: 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(251, 146, 60, 0.08);
+  border: 1px solid rgba(251, 146, 60, 0.25);
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  margin-bottom: 16px;
 }
-.q-explanation .el-icon { color: rgba(251,146,60,0.8); flex-shrink: 0; margin-top: 2px; }
+.q-explanation .el-icon {
+  color: rgba(251, 146, 60, 0.8);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
 
-.q-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.q-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
 
-/* ── Pagination ── */
+/* ── Pagination Bar ── */
 .pagination-bar {
-  display: flex; justify-content: center; padding: 16px 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 24px 0 40px 0;
+  border-top: 1px dashed var(--color-border);
+  margin-top: 20px;
+}
+.page-size-selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+}
+.page-size-label {
+  white-space: nowrap;
+}
+
+/* ── Floating Back to Top ── */
+.back-to-top-btn {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 100;
+  width: 48px;
+  height: 48px;
+  box-shadow: 0 4px 20px rgba(79, 142, 247, 0.4);
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: #fff !important;
+  font-size: 20px;
+  transition: all 0.2s ease;
+}
+.back-to-top-btn:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 24px rgba(79, 142, 247, 0.5);
 }
 
 /* ── Search highlight ── */
@@ -412,5 +641,47 @@ function highlight(text) {
   color: inherit;
   border-radius: 2px;
   padding: 0 1px;
+}
+
+/* ── Media Queries (Mobile optimizations) ── */
+@media (max-width: 768px) {
+  .browse-title {
+    font-size: 1.4rem;
+  }
+  .browse-sub {
+    font-size: 0.8rem;
+  }
+  .sticky-toolbar-wrapper {
+    top: 60px;
+    padding: 10px 12px;
+    border-radius: 12px;
+  }
+  .toolbar {
+    gap: 10px;
+  }
+  .search-input {
+    min-width: 100%;
+  }
+  .answer-toggle-btn {
+    flex: 1;
+    text-align: center;
+  }
+  .result-count {
+    margin-left: 0;
+    width: 100%;
+    text-align: right;
+  }
+  .pagination-bar {
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .back-to-top-btn {
+    bottom: 24px;
+    right: 16px;
+    width: 42px;
+    height: 42px;
+    font-size: 18px;
+  }
 }
 </style>
