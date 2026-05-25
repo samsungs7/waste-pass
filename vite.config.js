@@ -3,6 +3,6 @@ import vue from '@vitejs/plugin-vue'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: './', // 確保靜態資源在 GitHub Pages 或是子路徑下能正確載入
+  base: '/waste-pass/', // 為了搭配乾淨網址 (History 模式)，必須明確指定 GitHub 的專案名稱
   plugins: [vue()],
 })
