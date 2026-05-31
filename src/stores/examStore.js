@@ -5,8 +5,8 @@ import { useConfigStore, VOLUME_ORDER } from './configStore'
 const HISTORY_KEY = 'waste_pass_exam_history'
 const MASTERED_KEY = 'waste_pass_mastered'
 
-// 動態載入 src/data/ 底下所有 .json 題庫
-const modules = import.meta.glob('../data/*.json', { eager: true })
+// 動態載入 src/data/topic/ 底下所有 .json 題庫
+const modules = import.meta.glob('../data/topic/*.json', { eager: true })
 const allQuestions = Object.values(modules).flatMap(m =>
   Array.isArray(m.default) ? m.default : []
 )
