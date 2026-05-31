@@ -360,8 +360,7 @@ onUnmounted(() => {
 
 /* ── Sticky Toolbar Wrapper ── */
 .sticky-toolbar-wrapper {
-  position: sticky;
-  top: 60px; /* Sticks right below main 60px navbar */
+  position: relative;
   z-index: 98;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
@@ -652,7 +651,8 @@ onUnmounted(() => {
     font-size: 0.8rem;
   }
   .sticky-toolbar-wrapper {
-    top: 60px;
+    position: relative; /* already set globally; ensure no sticky override */
+    top: 0;             /* remove sticky offset */
     padding: 10px 12px;
     border-radius: 12px;
   }
