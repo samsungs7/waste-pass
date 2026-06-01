@@ -6,7 +6,7 @@
         <el-icon><Trophy /></el-icon>
         乙級廢棄物處理專業技術人員
       </div>
-      <h1 class="page-title">題庫練習<span class="gradient-text">系統</span></h1>
+      <h1 class="page-title">考照練習<span class="gradient-text">系統</span></h1>
       <div class="hero-stats">
         <div class="stat-item">
           <span class="stat-value">{{ totalQ }}</span>
@@ -34,11 +34,11 @@
     <div class="mode-tabs">
       <div
         class="mode-tab"
-        :class="{ active: mode === 'exam' }"
-        @click="mode = 'exam'"
+        :class="{ active: mode === 'practice' }"
+        @click="mode = 'practice'"
       >
-        <el-icon><EditPen /></el-icon>
-        模擬考試
+        <el-icon><Memo /></el-icon>
+        練習題
       </div>
       <div
         class="mode-tab"
@@ -47,6 +47,14 @@
       >
         <el-icon><Reading /></el-icon>
         題庫瀏覽
+      </div>
+      <div
+        class="mode-tab"
+        :class="{ active: mode === 'exam' }"
+        @click="mode = 'exam'"
+      >
+        <el-icon><EditPen /></el-icon>
+        模擬考試
       </div>
     </div>
 
@@ -108,7 +116,7 @@
     </section>
 
     <!-- ═══ BROWSE MODE ═══ -->
-    <section v-else>
+    <section v-else-if="mode === 'browse'">
       <div class="section-header">
         <h2 class="section-title">
           <el-icon><Reading /></el-icon> 選擇冊別瀏覽題庫
@@ -130,6 +138,40 @@
               <h3 class="bc-title">{{ vol }}</h3>
               <p v-if="store.volumeSubjectMap[vol]" class="bc-subject">{{ store.volumeSubjectMap[vol] }}</p>
               <p class="bc-count">{{ volumeCount[vol] || 0 }} 題</p>
+            </div>
+            <el-icon class="bc-arrow"><ArrowRight /></el-icon>
+          </div>
+        </el-col>
+      </el-row>
+    </section>
+
+    <!-- ═══ PRACTICE MODE ═══ -->
+    <section v-else-if="mode === 'practice'">
+      <div class="section-header">
+        <h2 class="section-title">
+          <el-icon><Memo /></el-icon> 選擇冊別練習簡答題
+        </h2>
+        <p class="section-desc">依章節分組‧預設顯示答案‧支援關鍵字搜尋</p>
+      </div>
+      <div v-if="practiceVolumes.length === 0" class="practice-empty">
+        <el-icon size="48"><DocumentDelete /></el-icon>
+        <p>尚無練習題資料</p>
+      </div>
+      <el-row v-else :gutter="20">
+        <el-col
+          v-for="(vol, idx) in practiceVolumes"
+          :key="vol"
+          :xs="12" :sm="8" :md="6"
+          style="margin-bottom: 16px"
+        >
+          <div class="practice-card" @click="goToPractice(vol)">
+            <div class="pc-icon" :style="{ background: practiceIconBg[idx % practiceIconBg.length] }">
+              <el-icon size="22"><Memo /></el-icon>
+            </div>
+            <div class="bc-body">
+              <h3 class="bc-title">{{ vol }}</h3>
+              <p v-if="practiceSubjectMap[vol]" class="bc-subject">{{ practiceSubjectMap[vol] }}</p>
+              <p class="bc-count">{{ practiceCount[vol] || 0 }} 題</p>
             </div>
             <el-icon class="bc-arrow"><ArrowRight /></el-icon>
           </div>
@@ -161,17 +203,23 @@ import { useExamStore } from '../stores/examStore'
 import { useConfigStore } from '../stores/configStore'
 import {
   Trophy, Files, ArrowRight, Collection, Setting,
-  Document, Timer, EditPen, Reading,
+  Document, Timer, EditPen, Reading, Memo, DocumentDelete,
   DataAnalysis, Cpu, Odometer, MagicStick,
   Notebook, Connection, Monitor, Histogram, Warning,
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
+// ── Load practice data ──────────────────────────────────
+const practiceModules = import.meta.glob('../data/practice/*.json', { eager: true })
+const allPracticeQuestions = Object.values(practiceModules).flatMap(m =>
+  Array.isArray(m.default) ? m.default : []
+)
+
 const router = useRouter()
 const store = useExamStore()
 const config = useConfigStore()
 
-const mode = ref('exam')
+const mode = ref('practice')
 
 // ── Data ─────────────────────────────────────────────
 const examGroups = computed(() => config.examGroups)
@@ -219,6 +267,44 @@ function goToBrowse(volume) {
   router.push({ name: 'browse', params: { volume } })
 }
 
+function goToPractice(volume) {
+  router.push({ name: 'practice', params: { volume } })
+}
+
+// ── Practice data computed ──────────────────────────────
+const zhNum = { 一:1, 二:2, 三:3, 四:4, 五:5, 六:6, 七:7, 八:8, 九:9, 十:10,
+  十一:11, 十二:12, 十三:13, 十四:14, 十五:15, 十六:16, 十七:17, 十八:18, 十九:19, 二十:20 }
+function volOrder(v) {
+  // 先試阿拉伯數字：第1冊、第12冊
+  const mArab = v.match(/第(\d+)冊/)
+  if (mArab) return parseInt(mArab[1])
+  // 再試中文數字：第一冊、第十三冊
+  const mZh = v.match(/第(.+)冊/)
+  if (mZh) return zhNum[mZh[1]] ?? 999
+  return 999
+}
+
+const practiceVolumes = computed(() => {
+  const seen = new Set(allPracticeQuestions.map(q => q.volume).filter(Boolean))
+  return [...seen].sort((a, b) => volOrder(a) - volOrder(b))
+})
+
+const practiceSubjectMap = computed(() => {
+  const map = {}
+  allPracticeQuestions.forEach(q => {
+    if (q.volume && q.subject && !map[q.volume]) map[q.volume] = q.subject
+  })
+  return map
+})
+
+const practiceCount = computed(() => {
+  const map = {}
+  allPracticeQuestions.forEach(q => {
+    if (q.volume) map[q.volume] = (map[q.volume] || 0) + 1
+  })
+  return map
+})
+
 // ── Style helpers ────────────────────────────────────
 const accentColors = [
   'linear-gradient(135deg,#4f8ef7,#7c3aed)',
@@ -238,6 +324,12 @@ const iconBg = [
   'rgba(168,85,247,0.15)', 'rgba(6,182,212,0.15)', 'rgba(251,191,36,0.15)',
   'rgba(16,185,129,0.15)', 'rgba(99,102,241,0.15)', 'rgba(239,68,68,0.15)',
   'rgba(132,204,22,0.15)', 'rgba(14,165,233,0.15)',
+]
+const practiceIconBg = [
+  'rgba(167,139,250,0.18)', 'rgba(167,139,250,0.12)', 'rgba(139,92,246,0.15)',
+  'rgba(196,181,253,0.18)', 'rgba(124,58,237,0.12)', 'rgba(167,139,250,0.2)',
+  'rgba(139,92,246,0.18)', 'rgba(167,139,250,0.14)', 'rgba(196,181,253,0.15)',
+  'rgba(124,58,237,0.18)', 'rgba(167,139,250,0.16)',
 ]
 const examIcons = [
   DataAnalysis, Cpu, Odometer, MagicStick,
@@ -364,4 +456,29 @@ const examIcons = [
 
 /* CTA */
 .cta-row { text-align: center; padding: 8px 0 24px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+/* Practice Card */
+.practice-card {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 14px; padding: 16px;
+  cursor: pointer;
+  transition: border-color 0.22s, transform 0.22s, box-shadow 0.22s;
+}
+.practice-card:hover { border-color: rgba(167,139,250,0.5); transform: translateY(-2px); box-shadow: 0 8px 24px rgba(167,139,250,0.15); }
+.pc-icon {
+  width: 42px; height: 42px; border-radius: 10px; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  color: #a78bfa;
+}
+.practice-card:hover .bc-arrow { opacity: 1; transform: translateX(3px); color: #a78bfa; }
+
+/* Practice empty */
+.practice-empty {
+  text-align: center; padding: 60px 20px;
+  color: var(--color-text-muted);
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+
 </style>

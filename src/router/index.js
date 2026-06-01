@@ -5,6 +5,7 @@ import ResultView from '../views/ResultView.vue'
 import MistakeBookView from '../views/MistakeBookView.vue'
 import SettingsView from '../views/SettingsView.vue'
 import BrowseView from '../views/BrowseView.vue'
+import PracticeView from '../views/PracticeView.vue'
 
 const routes = [
   { path: '/', name: 'home', component: HomeView },
@@ -13,6 +14,7 @@ const routes = [
   { path: '/mistakes', name: 'mistakes', component: MistakeBookView },
   { path: '/settings', name: 'settings', component: SettingsView },
   { path: '/browse/:volume', name: 'browse', component: BrowseView },
+  { path: '/practice/:volume', name: 'practice', component: PracticeView },
 ]
 
 export default createRouter({

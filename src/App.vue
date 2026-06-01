@@ -33,7 +33,7 @@
     </main>
 
     <footer class="app-footer">
-      <p>乙級廢棄物處理專業技術人員 ‧ 題庫練習系統</p>
+      <p>乙級廢棄物處理專業技術人員 ‧ 考照練習系統</p>
     </footer>
   </div>
 </template>
