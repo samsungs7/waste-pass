@@ -5,7 +5,7 @@
       <el-button :icon="ArrowLeft" @click="$router.push('/')" circle class="back-btn" />
       <div class="header-content">
         <h1 class="practice-title">
-          <el-icon><EditPen /></el-icon>
+          <el-icon><Memo /></el-icon>
           練習題
         </h1>
         <p class="practice-sub">
@@ -173,7 +173,7 @@
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
-  ArrowLeft, ArrowDown, View, Hide, Search, EditPen,
+  ArrowLeft, ArrowDown, View, Hide, Search, Memo,
   DocumentDelete, CaretTop, Collection,
 } from '@element-plus/icons-vue'
 
@@ -194,9 +194,14 @@ const practiceVolumeSubjectMap = computed(() => {
   return map
 })
 
+const zhNum = { 一:1, 二:2, 三:3, 四:4, 五:5, 六:6, 七:7, 八:8, 九:9, 十:10,
+  十一:11, 十二:12, 十三:13, 十四:14, 十五:15, 十六:16, 十七:17, 十八:18, 十九:19, 二十:20 }
 function volOrder(v) {
-  const m = v.match(/第(\d+)冊/)
-  return m ? parseInt(m[1]) : 999
+  const mArab = v.match(/第(\d+)冊/)
+  if (mArab) return parseInt(mArab[1])
+  const mZh = v.match(/第(.+)冊/)
+  if (mZh) return zhNum[mZh[1]] ?? 999
+  return 999
 }
 const availableVolumes = computed(() => {
   const seen = new Set(allPracticeQuestions.map(q => q.volume).filter(Boolean))
