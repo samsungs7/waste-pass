@@ -84,6 +84,7 @@ onMounted(() => {
   font-weight: 700;
   color: var(--color-primary-light);
   transition: opacity 0.2s;
+  white-space: nowrap;
 }
 .nav-logo:hover { opacity: 0.8; }
 .nav-links { display: flex; gap: 4px; align-items: center; }
@@ -98,6 +99,7 @@ onMounted(() => {
   font-size: 0.9rem;
   font-weight: 500;
   transition: background 0.2s, color 0.2s;
+  white-space: nowrap;
 }
 .nav-link:hover,
 .nav-link.router-link-active {
@@ -119,11 +121,39 @@ onMounted(() => {
   cursor: pointer;
   margin-left: 4px;
   transition: background 0.2s, color 0.2s, border-color 0.2s;
+  flex-shrink: 0;
 }
 .theme-toggle:hover {
   background: var(--color-surface-2);
   color: var(--color-primary-light);
   border-color: var(--color-primary);
+}
+
+@media (max-width: 480px) {
+  .nav-inner {
+    padding: 0 12px;
+  }
+
+  .nav-logo {
+    gap: 6px;
+    font-size: 0.9rem;
+  }
+
+  .nav-links {
+    gap: 2px;
+  }
+
+  .nav-link {
+    gap: 3px;
+    padding: 6px 7px;
+    font-size: 0.8rem;
+  }
+
+  .theme-toggle {
+    width: 32px;
+    height: 32px;
+    margin-left: 2px;
+  }
 }
 
 .app-main { flex: 1; }

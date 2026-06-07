@@ -372,6 +372,7 @@ const examIcons = [
   cursor: pointer; font-weight: 600; font-size: 0.95rem;
   color: var(--color-text-muted);
   transition: all 0.2s;
+  white-space: nowrap;
 }
 .mode-tab:hover { color: var(--color-primary-light); }
 .mode-tab.active {
@@ -479,6 +480,30 @@ const examIcons = [
   text-align: center; padding: 60px 20px;
   color: var(--color-text-muted);
   display: flex; flex-direction: column; align-items: center; gap: 12px;
+}
+
+@media (max-width: 480px) {
+  .mode-tabs {
+    width: 100%;
+  }
+
+  .mode-tab {
+    flex: 1;
+    justify-content: center;
+    gap: 4px;
+    padding: 10px 8px;
+    font-size: 0.84rem;
+  }
+
+  :deep(.el-col-xs-12) {
+    flex: 0 0 100%;
+    max-width: 100%;
+  }
+
+  .practice-card,
+  .browse-card {
+    min-height: 96px;
+  }
 }
 
 </style>
