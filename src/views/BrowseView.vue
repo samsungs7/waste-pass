@@ -676,6 +676,18 @@ onUnmounted(() => {
     align-items: center;
     gap: 16px;
   }
+  .pagination-bar :deep(.el-pagination) {
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+  .pagination-bar :deep(.el-pagination__jump) {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
   .back-to-top-btn {
     bottom: 24px;
     right: 16px;

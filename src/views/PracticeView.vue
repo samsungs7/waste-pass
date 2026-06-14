@@ -588,6 +588,18 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
   .chapter-header { padding: 14px 16px; gap: 10px; }
   .question-card { padding: 14px 16px; gap: 10px; }
   .pagination-bar { flex-direction: column; align-items: center; gap: 16px; }
+  .pagination-bar :deep(.el-pagination) {
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+  .pagination-bar :deep(.el-pagination__jump) {
+    margin-left: 0;
+    width: 100%;
+    justify-content: center;
+  }
   .back-to-top-btn { bottom: 24px; right: 16px; width: 42px; height: 42px; }
 }
 </style>
