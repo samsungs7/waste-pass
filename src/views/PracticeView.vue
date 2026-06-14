@@ -115,6 +115,11 @@
                     </div>
                   </transition>
 
+                  <div v-if="isAnswerVisible(q) && q.explanation" class="q-explanation">
+                    <el-icon><InfoFilled /></el-icon>
+                    <span>{{ q.explanation }}</span>
+                  </div>
+
                   <div class="q-actions">
                     <el-tag size="small" type="info" effect="plain">{{ q.volume }}</el-tag>
                     <el-button
@@ -174,7 +179,7 @@ import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import {
   ArrowLeft, ArrowDown, View, Hide, Search, Memo,
-  DocumentDelete, CaretTop, Collection,
+  DocumentDelete, CaretTop, Collection, InfoFilled,
 } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -511,6 +516,26 @@ onUnmounted(() => window.removeEventListener('scroll', handleScroll))
 }
 .answer-content { font-size: 0.9rem; line-height: 1.8; color: var(--color-text); }
 .answer-content :deep(strong) { color: var(--color-primary-light); font-weight: 700; }
+
+.q-explanation {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: rgba(251,146,60,0.08);
+  border: 1px solid rgba(251,146,60,0.25);
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 0.88rem;
+  color: var(--color-text-muted);
+  line-height: 1.6;
+  margin-bottom: 12px;
+  white-space: pre-line;
+}
+.q-explanation .el-icon {
+  color: rgba(251,146,60,0.8);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
 
 /* Answer animation */
 .answer-slide-enter-active { transition: all 0.25s ease; }
