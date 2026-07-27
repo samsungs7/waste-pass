@@ -878,7 +878,7 @@
       "廢氣處理方式",
       "以上皆是。"
     ],
-    "answer": "1",
+    "answer": "4",
     "explanation": ""
   },
   {
@@ -902,9 +902,9 @@
     "question": "廢棄物焚化處理設施燃燒室熱負荷計算,其公式單位為何?",
     "options": [
       "hr x kcal/m³",
-      "m³ x hr/kcal",
+      "kcal/m³ x hr",
       "m³ x kcal/hr",
-      "m³x hr xkcal。"
+      "m³x hr x kcal。"
     ],
     "answer": "2",
     "explanation": ""
@@ -1449,8 +1449,8 @@
     "question": "燃燒室熱負荷之單位為",
     "options": [
       "kcal/m³",
-      "m²h/kcal",
-      "kcal/m²hr",
+      "m³h/kcal",
+      "kcal/m³hr",
       "kcal/kgm³。"
     ],
     "answer": "3",
